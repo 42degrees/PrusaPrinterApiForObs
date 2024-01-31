@@ -123,23 +123,41 @@ app.MapGet("/api/statusImage", async () =>
     var timeFont = new Font("Arial", 10);
     graphics.DrawString(printStartText, timeFont, Brushes.Black, new PointF(contentXOffset, contentYOffset - 10)); // Align with progress bar
 
-    // Draw progress bar
-    var progressBarBrush = Brushes.Green;
+    // Draw progress bar background (full bar)
     var fullProgressBarWidth = image.Width - contentXOffset - 10; // Full width for 100% progress
-    var progressWidth = (int)(progress / 100 * (image.Width - contentXOffset - 10)); // Calculate width based on progress
+    var progressBarBackgroundBrush = Brushes.LightGray; // Light gray for the background of the progress bar
+    graphics.FillRectangle(progressBarBackgroundBrush, contentXOffset, contentYOffset + 10, fullProgressBarWidth, 20);
+
+    // Draw progress bar (actual progress)
+    var progressBarBrush = Brushes.Green;
+    var progressWidth = (int)(progress / 100 * fullProgressBarWidth); // Calculate width based on current progress
     graphics.FillRectangle(progressBarBrush, contentXOffset, contentYOffset + 10, progressWidth, 20);
 
     // Draw box around progress bar
     var progressBoxPen = new Pen(Color.Black); // Pen for drawing the box
     graphics.DrawRectangle(progressBoxPen, contentXOffset, contentYOffset + 10, fullProgressBarWidth, 20);
 
-    // Draw percentage text
+    // Prepare to draw percentage text
     var font = new Font("Arial", 10);
     var percentageText = $"{progress}%";
     var textSize = graphics.MeasureString(percentageText, font);
-    var textX = contentXOffset + (progressWidth / 2) - (textSize.Width / 2); // Center the text in the progress bar
+    var textX = contentXOffset + (fullProgressBarWidth / 2) - (textSize.Width / 2); // Center the text in the full progress bar width
     var textY = contentYOffset + 10 + (20 / 2) - (textSize.Height / 2); // Vertically center the text in the progress bar
+
+    // Clip and draw percentage text over the progress bar in white
+    var progressClip = new RectangleF(contentXOffset, contentYOffset + 10, progressWidth, 20);
+    graphics.SetClip(progressClip);
     graphics.DrawString(percentageText, font, Brushes.White, new PointF(textX, textY));
+
+    // Reset clip and draw percentage text over the remaining bar in black
+    graphics.ResetClip();
+
+    var backgroundClip = new RectangleF(contentXOffset + progressWidth, contentYOffset + 10, fullProgressBarWidth - progressWidth, 20);
+    graphics.SetClip(backgroundClip);
+    graphics.DrawString(percentageText, font, Brushes.Black, new PointF(textX, textY));
+
+    // Reset clip for further drawing
+    graphics.ResetClip();
 
     // Draw time texts
     font = new Font("Arial", 12);
