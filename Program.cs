@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
 using System.Threading;
+using Flurl;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators.Digest;
@@ -71,24 +72,51 @@ app.MapGet("/api/statusImage", async () =>
     double progress = jsonResponse.progress;
     int timeRemaining = jsonResponse.time_remaining;
     int timePrinting = jsonResponse.time_printing;
-    string displayName = jsonResponse.display_name;
-    string imageUrl = jsonResponse.file.refs.thumbnail;
+    var displayName = jsonResponse.file.display_name;
+
+    // Build the thumbnail URL using flurl
+    var thumbnailUrl = Url.Combine(apiBaseUrl, jsonResponse.file.refs.thumbnail);
+
+    // Fetch the thumbnail image
+    var thumbnailRequest = new RestRequest(thumbnailUrl, Method.Get);
+    var thumbnailResponse = await client.ExecuteAsync(thumbnailRequest);
+    if (!thumbnailResponse.IsSuccessful)
+    {
+        return Results.Problem("Failed to fetch thumbnail.");
+    }
+
+    Image thumbnailImage;
+    using (var ms = new MemoryStream(thumbnailResponse.RawBytes))
+    {
+        thumbnailImage = Image.FromStream(ms);
+    }
+
+    // Resize thumbnail if necessary
+    int thumbnailHeight = 100;
+    double aspectRatio = (double)thumbnailImage.Width / thumbnailImage.Height;
+    int thumbnailWidth = (int)(thumbnailHeight * aspectRatio);
 
     // Generate the image
-    using var image = new Bitmap(400, 100); // Image size can be adjusted
+    using var image = new Bitmap(500, 100); // Increased width to accommodate thumbnail
     using var graphics = Graphics.FromImage(image);
     graphics.FillRectangle(Brushes.White, 0, 0, image.Width, image.Height); // Background
 
+    // Draw resized thumbnail
+    graphics.DrawImage(thumbnailImage, 0, 0, thumbnailWidth, thumbnailHeight);
+
+    // Adjust layout for progress bar and text elements
+    int contentXOffset = thumbnailWidth + 10; // Start drawing content to the right of the thumbnail
+
     // Draw progress bar
     var progressBarBrush = Brushes.Green;
-    var progressWidth = (int)(progress / 100 * (image.Width - 20)); // Calculate width based on progress
-    graphics.FillRectangle(progressBarBrush, 10, 10, progressWidth, 20);
+    var progressWidth = (int)(progress / 100 * (image.Width - contentXOffset - 10)); // Calculate width based on progress
+    graphics.FillRectangle(progressBarBrush, contentXOffset, 10, progressWidth, 20);
 
     // Draw percentage text
-    var percentageText = $"{progress}%";
     var font = new Font("Arial", 10);
+    var percentageText = $"{progress}%";
     var textSize = graphics.MeasureString(percentageText, font);
-    var textX = 10 + (progressWidth / 2) - (textSize.Width / 2); // Center the text in the progress bar
+    var textX = contentXOffset + (progressWidth / 2) - (textSize.Width / 2); // Center the text in the progress bar
     var textY = 10 + (20 / 2) - (textSize.Height / 2); // Vertically center the text in the progress bar
     graphics.DrawString(percentageText, font, Brushes.Black, new PointF(textX, textY));
 
@@ -96,13 +124,13 @@ app.MapGet("/api/statusImage", async () =>
     font = new Font("Arial", 12);
     var timeRemainingText = $"Time Remaining: {TimeSpan.FromSeconds(timeRemaining):hh\\:mm\\:ss}";
     var timePrintingText = $"Time Printing: {TimeSpan.FromSeconds(timePrinting):hh\\:mm\\:ss}";
-    graphics.DrawString(timeRemainingText, font, Brushes.Black, new PointF(10, 40));
-    graphics.DrawString(timePrintingText, font, Brushes.Black, new PointF(10, 60));
+    graphics.DrawString(timeRemainingText, font, Brushes.Black, new PointF(contentXOffset, 40));
+    graphics.DrawString(timePrintingText, font, Brushes.Black, new PointF(contentXOffset, 60));
 
     // Convert the image to a byte array
-    using var ms = new MemoryStream();
-    image.Save(ms, ImageFormat.Png);
-    var imageBytes = ms.ToArray();
+    using var ms1 = new MemoryStream();
+    image.Save(ms1, ImageFormat.Png);
+    var imageBytes = ms1.ToArray();
 
     return Results.File(imageBytes, "image/png");
 })
