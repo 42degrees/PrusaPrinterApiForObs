@@ -72,10 +72,10 @@ app.MapGet("/api/statusImage", async () =>
     double progress = jsonResponse.progress;
     int timeRemaining = jsonResponse.time_remaining;
     int timePrinting = jsonResponse.time_printing;
-    var displayName = jsonResponse.file.display_name;
+    string displayName = jsonResponse.file.display_name;
 
     // Build the thumbnail URL using flurl
-    var thumbnailUrl = Url.Combine(apiBaseUrl, jsonResponse.file.refs.thumbnail);
+    var thumbnailUrl = Url.Combine(apiBaseUrl, (string)jsonResponse.file.refs.thumbnail);
 
     // Fetch the thumbnail image
     var thumbnailRequest = new RestRequest(thumbnailUrl, Method.Get);
@@ -96,13 +96,22 @@ app.MapGet("/api/statusImage", async () =>
     double aspectRatio = (double)thumbnailImage.Width / thumbnailImage.Height;
     int thumbnailWidth = (int)(thumbnailHeight * aspectRatio);
 
-    // Generate the image
-    using var image = new Bitmap(500, 100); // Increased width to accommodate thumbnail
+    // Generate the image with additional height for the title
+    using var image = new Bitmap(500, 150); // Increased height to accommodate title
     using var graphics = Graphics.FromImage(image);
     graphics.FillRectangle(Brushes.White, 0, 0, image.Width, image.Height); // Background
 
+    // Draw title
+    var titleFont = new Font("Arial", 14, FontStyle.Bold);
+    var titleSize = graphics.MeasureString(displayName, titleFont);
+    var titleX = (image.Width - titleSize.Width) / 2; // Center the title
+    graphics.DrawString(displayName, titleFont, Brushes.Black, new PointF(titleX, 10));
+
+    // Adjust layout for thumbnail, progress bar, and text elements
+    int contentYOffset = (int)titleSize.Height + 20; // Start drawing content below the title
+
     // Draw resized thumbnail
-    graphics.DrawImage(thumbnailImage, 0, 0, thumbnailWidth, thumbnailHeight);
+    graphics.DrawImage(thumbnailImage, 0, contentYOffset, thumbnailWidth, thumbnailHeight);
 
     // Adjust layout for progress bar and text elements
     int contentXOffset = thumbnailWidth + 10; // Start drawing content to the right of the thumbnail
@@ -110,22 +119,22 @@ app.MapGet("/api/statusImage", async () =>
     // Draw progress bar
     var progressBarBrush = Brushes.Green;
     var progressWidth = (int)(progress / 100 * (image.Width - contentXOffset - 10)); // Calculate width based on progress
-    graphics.FillRectangle(progressBarBrush, contentXOffset, 10, progressWidth, 20);
+    graphics.FillRectangle(progressBarBrush, contentXOffset, contentYOffset + 10, progressWidth, 20);
 
     // Draw percentage text
     var font = new Font("Arial", 10);
     var percentageText = $"{progress}%";
     var textSize = graphics.MeasureString(percentageText, font);
     var textX = contentXOffset + (progressWidth / 2) - (textSize.Width / 2); // Center the text in the progress bar
-    var textY = 10 + (20 / 2) - (textSize.Height / 2); // Vertically center the text in the progress bar
-    graphics.DrawString(percentageText, font, Brushes.Black, new PointF(textX, textY));
+    var textY = contentYOffset + 10 + (20 / 2) - (textSize.Height / 2); // Vertically center the text in the progress bar
+    graphics.DrawString(percentageText, font, Brushes.White, new PointF(textX, textY));
 
     // Draw time texts
     font = new Font("Arial", 12);
     var timeRemainingText = $"Time Remaining: {TimeSpan.FromSeconds(timeRemaining):hh\\:mm\\:ss}";
     var timePrintingText = $"Time Printing: {TimeSpan.FromSeconds(timePrinting):hh\\:mm\\:ss}";
-    graphics.DrawString(timeRemainingText, font, Brushes.Black, new PointF(contentXOffset, 40));
-    graphics.DrawString(timePrintingText, font, Brushes.Black, new PointF(contentXOffset, 60));
+    graphics.DrawString(timeRemainingText, font, Brushes.Black, new PointF(contentXOffset, contentYOffset + 40));
+    graphics.DrawString(timePrintingText, font, Brushes.Black, new PointF(contentXOffset, contentYOffset + 60));
 
     // Convert the image to a byte array
     using var ms1 = new MemoryStream();
