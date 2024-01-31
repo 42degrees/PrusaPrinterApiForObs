@@ -120,12 +120,11 @@ internal class DigestAuthenticatorManager
     /// <returns>The digest header.</returns>
     public string GetDigestHeader(string digestUri, Method method)
     {
-        string digestResponse;
         if (null == _qop)
         {
             var hash1 = GenerateMD5($"{_username}:{_realm}:{_password}");
             var hash2 = GenerateMD5($"{method.ToString().ToUpperInvariant()}:{digestUri}");
-            digestResponse = GenerateMD5($"{hash1}:{_nonce}:{hash2}");
+            var digestResponse = GenerateMD5($"{hash1}:{_nonce}:{hash2}");
             return $"Digest username=\"{_username}\"," +
                    $" realm=\"{_realm}\"," +
                    $" nonce=\"{_nonce}\"," +
@@ -137,7 +136,7 @@ internal class DigestAuthenticatorManager
             var hash1 = GenerateMD5($"{_username}:{_realm}:{_password}");
             var hash2 = GenerateMD5($"{method.ToString().ToUpperInvariant()}:{digestUri}");
 
-            digestResponse = GenerateMD5($"{hash1}:{_nonce}:{DigestHeader.NONCE_COUNT:00000000}:{_cnonce}:{_qop}:{hash2}");
+            var digestResponse = GenerateMD5($"{hash1}:{_nonce}:{DigestHeader.NONCE_COUNT:00000000}:{_cnonce}:{_qop}:{hash2}");
             return $"Digest username=\"{_username}\"," +
                    $" realm=\"{_realm}\"," +
                    $" nonce=\"{_nonce}\"," +
@@ -154,7 +153,7 @@ internal class DigestAuthenticatorManager
             // TODO(sgartner, 2024-01-25): Hash2 has an extra H(entity-body) parameter if qop is "auth-int".  I don't really know what they want here.
             var hash2 = GenerateMD5($"{method.ToString().ToUpperInvariant()}:{digestUri}");
 
-            digestResponse = GenerateMD5($"{hash1}:{_nonce}:{DigestHeader.NONCE_COUNT:00000000}:{_cnonce}:{_qop}:{hash2}");
+            var digestResponse = GenerateMD5($"{hash1}:{_nonce}:{DigestHeader.NONCE_COUNT:00000000}:{_cnonce}:{_qop}:{hash2}");
             return $"Digest username=\"{_username}\"," +
                    $" realm=\"{_realm}\"," +
                    $" nonce=\"{_nonce}\"," +
