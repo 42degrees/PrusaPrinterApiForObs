@@ -1,18 +1,22 @@
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Dynamic;
-using System.Threading;
 using Flurl;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators.Digest;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+    {
+        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    });
 
 var app = builder.Build();
 
@@ -33,6 +37,18 @@ var username   = "maker";
 var password   = "REDACTED";
 var apikey     = "REDACTED";
 
+/// <summary>
+/// Gets the printing status and generates an image representation.
+/// </summary>
+/// <remarks>
+/// Sample request:
+///
+///     GET /api/statusImage
+///
+/// </remarks>
+/// <returns>An image showing the current printing status.</returns>
+/// <response code="200">Returns the status image</response>
+/// <response code="400">If there is an error fetching the status</response>
 app.MapGet("/api/status", async () =>
 {
     var options = new RestClientOptions(apiBaseUrl)
@@ -48,8 +64,26 @@ app.MapGet("/api/status", async () =>
     return Results.Text(queryResult.Content, contentType: "application/json");
 })
 .WithName("PrinterStatus")
-.WithOpenApi();
+.WithOpenApi()
+.Produces(200, typeof(FileContentResult))
+.ProducesProblem(400);
 
+#pragma warning disable CA1416 // This method will only work properly in Windows, but I'm fine with that.
+
+/// <summary>
+/// Retrieves the current status of the printer and generates a visual representation as an image.
+/// </summary>
+/// <remarks>
+/// This endpoint fetches the latest printing status including progress, time remaining, and other details,
+/// and then generates an image that visually represents these metrics. The image includes a progress bar,
+/// time indicators, and a thumbnail related to the current print job if available.
+///
+/// The progress bar within the image will show the completion percentage, and the text overlay will adjust
+/// based on the progress bar's fill level for optimal readability. The start time of the print job is also
+/// calculated and displayed.
+/// </remarks>
+/// <response code="200">Returns an image file with the visual representation of the current printing status.</response>
+/// <response code="400">Indicates a failure to fetch the printing status from the API or to generate the image.</response>
 app.MapGet("/api/statusImage", async () =>
 {
     var options = new RestClientOptions(apiBaseUrl)
@@ -62,17 +96,23 @@ app.MapGet("/api/statusImage", async () =>
     var request = new RestRequest(jobPath, Method.Get);
     var queryResult = await client.ExecuteAsync(request);
 
-    if (!queryResult.IsSuccessful)
+    if (!queryResult.IsSuccessful || string.IsNullOrWhiteSpace(queryResult.Content))
     {
         return Results.Problem("Failed to fetch status from API.");
     }
 
     // Parse the JSON response
-    dynamic jsonResponse = JsonConvert.DeserializeObject(queryResult.Content);
-    double progress = jsonResponse.progress;
-    int timeRemaining = jsonResponse.time_remaining;
-    int timePrinting = jsonResponse.time_printing;
-    string displayName = jsonResponse.file.display_name;
+    dynamic? jsonResponse = JsonConvert.DeserializeObject(queryResult.Content);
+
+    if (null == jsonResponse)
+    {
+        return Results.Problem("Failed to parse result JSON.");
+    }
+
+    double progress      = jsonResponse.progress;
+    int    timeRemaining = jsonResponse.time_remaining;
+    int    timePrinting  = jsonResponse.time_printing;
+    string displayName   = jsonResponse.file.display_name;
 
     // Build the thumbnail URL using flurl
     var thumbnailUrl = Url.Combine(apiBaseUrl, (string)jsonResponse.file.refs.thumbnail);
@@ -93,7 +133,7 @@ app.MapGet("/api/statusImage", async () =>
 
     // Resize thumbnail if necessary
     var thumbnailHeight = 100;
-    double aspectRatio = (double)thumbnailImage.Width / thumbnailImage.Height;
+    var aspectRatio = (double)thumbnailImage.Width / thumbnailImage.Height;
     var thumbnailWidth = (int)(thumbnailHeight * aspectRatio);
 
     // Calculate the print start time
@@ -111,13 +151,13 @@ app.MapGet("/api/statusImage", async () =>
     graphics.DrawString(displayName, titleFont, Brushes.Black, new PointF((image.Width - graphics.MeasureString(displayName, titleFont).Width) / 2, 10));
 
     // Adjust layout for thumbnail, progress bar, text elements, and print start time
-    int contentYOffset = (int)graphics.MeasureString(displayName, titleFont).Height + 30; // Adjusted for print start time
+    var contentYOffset = (int)graphics.MeasureString(displayName, titleFont).Height + 30; // Adjusted for print start time
 
     // Draw resized thumbnail
     graphics.DrawImage(thumbnailImage, 0, contentYOffset - 30, thumbnailWidth, thumbnailHeight);
 
     // Determine content X offset based on thumbnail width
-    int contentXOffset = thumbnailWidth + 10;
+    var contentXOffset = thumbnailWidth + 10;
 
     // Draw print start time aligned with the progress bar
     var timeFont = new Font("Arial", 10);
@@ -174,7 +214,10 @@ app.MapGet("/api/statusImage", async () =>
     return Results.File(imageBytes, "image/png");
 })
 .WithName("PrinterStatusImage")
-.WithOpenApi();
+.WithOpenApi()
+.Produces(200, typeof(FileContentResult))
+.ProducesProblem(400);
+#pragma warning restore CA1416 // Validate platform compatibility
 
 app.Run();
 
