@@ -96,19 +96,26 @@ app.MapGet("/api/statusImage", async () =>
     double aspectRatio = (double)thumbnailImage.Width / thumbnailImage.Height;
     int thumbnailWidth = (int)(thumbnailHeight * aspectRatio);
 
-    // Generate the image with additional height for the title
-    using var image = new Bitmap(500, 150); // Increased height to accommodate title
+// Calculate the print start time
+    var currentTime = DateTime.Now;
+    var printStartTime = currentTime.AddSeconds(-timePrinting);
+    var printStartText = $"Printing Started {(printStartTime.Date == currentTime.Date ? "Today" : "Yesterday")} at {printStartTime:hh:mm tt}";
+
+    // Generate the image with additional height for the title and print start time
+    using var image = new Bitmap(500, 170); // Increased height to accommodate print start time
     using var graphics = Graphics.FromImage(image);
     graphics.FillRectangle(Brushes.White, 0, 0, image.Width, image.Height); // Background
 
     // Draw title
     var titleFont = new Font("Arial", 14, FontStyle.Bold);
-    var titleSize = graphics.MeasureString(displayName, titleFont);
-    var titleX = (image.Width - titleSize.Width) / 2; // Center the title
-    graphics.DrawString(displayName, titleFont, Brushes.Black, new PointF(titleX, 10));
+    graphics.DrawString(displayName, titleFont, Brushes.Black, new PointF((image.Width - graphics.MeasureString(displayName, titleFont).Width) / 2, 10));
 
-    // Adjust layout for thumbnail, progress bar, and text elements
-    int contentYOffset = (int)titleSize.Height + 20; // Start drawing content below the title
+    // Adjust layout for thumbnail, progress bar, text elements, and print start time
+    int contentYOffset = (int)graphics.MeasureString(displayName, titleFont).Height + 30; // Adjusted for print start time
+
+    // Draw print start time
+    var timeFont = new Font("Arial", 10);
+    graphics.DrawString(printStartText, timeFont, Brushes.Black, new PointF(0, contentYOffset - 20)); // Positioned above the thumbnail and progress bar
 
     // Draw resized thumbnail
     graphics.DrawImage(thumbnailImage, 0, contentYOffset, thumbnailWidth, thumbnailHeight);
