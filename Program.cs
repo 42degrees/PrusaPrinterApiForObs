@@ -92,17 +92,17 @@ app.MapGet("/api/statusImage", async () =>
     }
 
     // Resize thumbnail if necessary
-    int thumbnailHeight = 100;
+    var thumbnailHeight = 100;
     double aspectRatio = (double)thumbnailImage.Width / thumbnailImage.Height;
-    int thumbnailWidth = (int)(thumbnailHeight * aspectRatio);
+    var thumbnailWidth = (int)(thumbnailHeight * aspectRatio);
 
-// Calculate the print start time
+    // Calculate the print start time
     var currentTime = DateTime.Now;
     var printStartTime = currentTime.AddSeconds(-timePrinting);
     var printStartText = $"Printing Started {(printStartTime.Date == currentTime.Date ? "Today" : "Yesterday")} at {printStartTime:hh:mm tt}";
 
     // Generate the image with additional height for the title and print start time
-    using var image = new Bitmap(500, 170); // Increased height to accommodate print start time
+    using var image = new Bitmap(500, 140);
     using var graphics = Graphics.FromImage(image);
     graphics.FillRectangle(Brushes.White, 0, 0, image.Width, image.Height); // Background
 
@@ -113,20 +113,25 @@ app.MapGet("/api/statusImage", async () =>
     // Adjust layout for thumbnail, progress bar, text elements, and print start time
     int contentYOffset = (int)graphics.MeasureString(displayName, titleFont).Height + 30; // Adjusted for print start time
 
-    // Draw print start time
-    var timeFont = new Font("Arial", 10);
-    graphics.DrawString(printStartText, timeFont, Brushes.Black, new PointF(0, contentYOffset - 20)); // Positioned above the thumbnail and progress bar
-
     // Draw resized thumbnail
-    graphics.DrawImage(thumbnailImage, 0, contentYOffset, thumbnailWidth, thumbnailHeight);
+    graphics.DrawImage(thumbnailImage, 0, contentYOffset - 30, thumbnailWidth, thumbnailHeight);
 
-    // Adjust layout for progress bar and text elements
-    int contentXOffset = thumbnailWidth + 10; // Start drawing content to the right of the thumbnail
+    // Determine content X offset based on thumbnail width
+    int contentXOffset = thumbnailWidth + 10;
+
+    // Draw print start time aligned with the progress bar
+    var timeFont = new Font("Arial", 10);
+    graphics.DrawString(printStartText, timeFont, Brushes.Black, new PointF(contentXOffset, contentYOffset - 10)); // Align with progress bar
 
     // Draw progress bar
     var progressBarBrush = Brushes.Green;
+    var fullProgressBarWidth = image.Width - contentXOffset - 10; // Full width for 100% progress
     var progressWidth = (int)(progress / 100 * (image.Width - contentXOffset - 10)); // Calculate width based on progress
     graphics.FillRectangle(progressBarBrush, contentXOffset, contentYOffset + 10, progressWidth, 20);
+
+    // Draw box around progress bar
+    var progressBoxPen = new Pen(Color.Black); // Pen for drawing the box
+    graphics.DrawRectangle(progressBoxPen, contentXOffset, contentYOffset + 10, fullProgressBarWidth, 20);
 
     // Draw percentage text
     var font = new Font("Arial", 10);
