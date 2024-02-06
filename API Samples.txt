@@ -1,0 +1,416 @@
+MK4 API's with sample output
+
+Things I was too afraid to try while it was printing:
+/api/v1/transfer
+/api/v1/update/prusalink
+/api/system/commands/custom/changeexposure - resin printing only
+
+
+
+
+Things I tried:
+
+http://192.168.1.40/api/version
+
+{
+    "api": "2.0.0",
+    "server": "2.1.2",
+    "nozzle_diameter": 0.40,
+    "text": "PrusaLink",
+    "hostname": "",
+    "capabilities": {
+        "upload-by-put": true
+    }
+}
+
+
+http://192.168.1.40/api/v1/info
+{
+    "nozzle_diameter": 0.40,
+    "mmu": false,
+    "serial": "10589-3742441633503855",
+    "hostname": "",
+    "min_extrusion_temp": 170
+}
+
+http://192.168.1.40/api/v1/storage
+{
+    "storage_list": [
+        {
+            "path": "/usb/",
+            "name": "usb",
+            "type": "USB",
+            "read_only": false,
+            "available": true
+        }
+    ]
+}
+
+/api/v1/job/${jobId}/pause
+/api/v1/job/${jobId}/resume
+
+http://192.168.1.40/api/v1/job
+{
+    "id": 82,
+    "state": "PRINTING",
+    "progress": 69.00,
+    "time_remaining": 15780,
+    "time_printing": 35965,
+    "file": {
+        "refs": {
+            "icon": "/thumb/s/usb/GRABOI~3.BGC",
+            "thumbnail": "/thumb/l/usb/GRABOI~3.BGC",
+            "download": "/usb/GRABOI~3.BGC"
+        },
+        "name": "GRABOI~3.BGC",
+        "display_name": "Graboid body 3-4.bgcode",
+        "path": "/usb",
+        "size": 33262753,
+        "m_timestamp": 1706798533
+    }
+}
+
+http://192.168.1.40/api/v1/status
+{
+    "job": {
+        "id": 82,
+        "progress": 69.00,
+        "time_remaining": 15720,
+        "time_printing": 35994
+    },
+    "storage": {
+        "path": "/usb/",
+        "name": "usb",
+        "read_only": false
+    },
+    "printer": {
+        "state": "PRINTING",
+        "temp_bed": 60.0,
+        "target_bed": 60.0,
+        "temp_nozzle": 190.9,
+        "target_nozzle": 190.0,
+        "axis_z": 66.0,
+        "flow": 100,
+        "speed": 100,
+        "fan_hotend": 7826,
+        "fan_print": 6603
+    }
+}
+
+http://192.168.1.40/api/printer
+{
+    "telemetry": {
+        "temp-bed": 59.9,
+        "temp-nozzle": 190.4,
+        "print-speed": 100,
+        "z-height": 66.2,
+        "material": "PLA"
+    },
+    "temperature": {
+        "tool0": {
+            "actual": 190.4,
+            "target": 190.0,
+            "display": 190.0,
+            "offset": 0
+        },
+        "bed": {
+            "actual": 59.9,
+            "target": 60.0,
+            "offset": 0
+        }
+    },
+    "state": {
+        "text": "Printing",
+        "flags": {
+            "link_state": "PRINTING",
+            "operational": false,
+            "paused": false,
+            "printing": true,
+            "cancelling": false,
+            "pausing": false,
+            "error": false,
+            "sdReady": false,
+            "closedOnError": false,
+            "ready": false,
+            "busy": false
+        }
+    }
+}
+
+http://192.168.1.40/api/settings
+{
+    "printer": {}
+}
+
+http://192.168.1.40/api/files
+{
+    "files": [
+        {
+            "name": "USB",
+            "path": "/usb",
+            "display": "USB",
+            "type": "folder",
+            "origin": "usb",
+            "children": [
+                {
+                    "name": "FURIA_~1.BGC",
+                    "display": "furia_nocturna_decimation_stl_0.4n_0.2mm_PLA_MK4IS_14h38m_CAMERA_READY.bgcode",
+                    "path": "usb/FURIA_~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/FURIA_~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/FURIA_~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/FURIA_~1.BGC",
+                        "download": "usb/FURIA_~1.BGC"
+                    }
+                },
+                {
+                    "name": "TRILOB~1.BGC",
+                    "display": "Trilobite_0.4n_0.2mm_PLA_MK4_4h56m_CAMERA_READY.bgcode",
+                    "path": "usb/TRILOB~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/TRILOB~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/TRILOB~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/TRILOB~1.BGC",
+                        "download": "usb/TRILOB~1.BGC"
+                    }
+                },
+                {
+                    "name": "MEXICA~1.BGC",
+                    "display": "Mexican_train_holder_with_2_trains_0.4n_0.2mm_PLA_MK4_2h8m.bgcode",
+                    "path": "usb/MEXICA~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/MEXICA~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/MEXICA~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/MEXICA~1.BGC",
+                        "download": "usb/MEXICA~1.BGC"
+                    }
+                },
+                {
+                    "name": "GRABOI~1.BGC",
+                    "display": "Graboid head.bgcode",
+                    "path": "usb/GRABOI~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/GRABOI~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/GRABOI~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/GRABOI~1.BGC",
+                        "download": "usb/GRABOI~1.BGC"
+                    }
+                },
+                {
+                    "name": "DOMINO~1.BGC",
+                    "display": "Domino_holder_with_train_0.4n_0.2mm_PLA_MK4_9h17m.bgcode",
+                    "path": "usb/DOMINO~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/DOMINO~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/DOMINO~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/DOMINO~1.BGC",
+                        "download": "usb/DOMINO~1.BGC"
+                    }
+                },
+                {
+                    "name": "TRAINW~1.BGC",
+                    "display": "Train with Q v2_0.4n_0.2mm_PLA_MK4_12m.bgcode",
+                    "path": "usb/TRAINW~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/TRAINW~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/TRAINW~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/TRAINW~1.BGC",
+                        "download": "usb/TRAINW~1.BGC"
+                    }
+                },
+                {
+                    "name": "JUSTTH~1.BGC",
+                    "display": "Just the train, maam_0.4n_0.2mm_PLA_MK4_12m.bgcode",
+                    "path": "usb/JUSTTH~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/JUSTTH~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/JUSTTH~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/JUSTTH~1.BGC",
+                        "download": "usb/JUSTTH~1.BGC"
+                    }
+                },
+                {
+                    "name": "DOMINO~2.BGC",
+                    "display": "Domino_holder_with_brim_0.4n_0.2mm_PLA_MK4_9h14m.bgcode",
+                    "path": "usb/DOMINO~2.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/DOMINO~2.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/DOMINO~2.BGC",
+                        "thumbnailBig": "/thumb/l/usb/DOMINO~2.BGC",
+                        "download": "usb/DOMINO~2.BGC"
+                    }
+                },
+                {
+                    "name": "CUSTOM~1.BGC",
+                    "display": "Custom_License_Plate_Frame_0.4n_0.2mm_PLA_MK4_4h25m.bgcode",
+                    "path": "usb/CUSTOM~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/CUSTOM~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/CUSTOM~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/CUSTOM~1.BGC",
+                        "download": "usb/CUSTOM~1.BGC"
+                    }
+                },
+                {
+                    "name": "FINGER~1.BGC",
+                    "display": "finger_brace_0.4n_0.2mm_PLA_MK4_22m.bgcode",
+                    "path": "usb/FINGER~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/FINGER~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/FINGER~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/FINGER~1.BGC",
+                        "download": "usb/FINGER~1.BGC"
+                    }
+                },
+                {
+                    "name": "FINGER~2.BGC",
+                    "display": "finger_brace_0.4n_0.2mm_PLA_MK4_37m.bgcode",
+                    "path": "usb/FINGER~2.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/FINGER~2.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/FINGER~2.BGC",
+                        "thumbnailBig": "/thumb/l/usb/FINGER~2.BGC",
+                        "download": "usb/FINGER~2.BGC"
+                    }
+                },
+                {
+                    "name": "SUSTAI~1.BGC",
+                    "display": "Sustainably powered by D and D nameplates_0.4n_0.2mm_PLA_MK4_2h43m.bgcode",
+                    "path": "usb/SUSTAI~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/SUSTAI~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/SUSTAI~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/SUSTAI~1.BGC",
+                        "download": "usb/SUSTAI~1.BGC"
+                    }
+                },
+                {
+                    "name": "DEPRES~1.BGC",
+                    "display": "Depression and Despair nameplate - v2_0.4n_0.2mm_PLA_MK4_1h29m.bgcode",
+                    "path": "usb/DEPRES~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/DEPRES~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/DEPRES~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/DEPRES~1.BGC",
+                        "download": "usb/DEPRES~1.BGC"
+                    }
+                },
+                {
+                    "name": "GODZIL~1.BGC",
+                    "display": "Godzilla 1.0 (Minus One).bgcode",
+                    "path": "usb/GODZIL~1.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/GODZIL~1.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/GODZIL~1.BGC",
+                        "thumbnailBig": "/thumb/l/usb/GODZIL~1.BGC",
+                        "download": "usb/GODZIL~1.BGC"
+                    }
+                },
+                {
+                    "name": "GRABOI~2.BGC",
+                    "display": "Graboid body 1-2.bgcode",
+                    "path": "usb/GRABOI~2.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/GRABOI~2.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/GRABOI~2.BGC",
+                        "thumbnailBig": "/thumb/l/usb/GRABOI~2.BGC",
+                        "download": "usb/GRABOI~2.BGC"
+                    }
+                },
+                {
+                    "name": "GRABOI~3.BGC",
+                    "display": "Graboid body 3-4.bgcode",
+                    "path": "usb/GRABOI~3.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/GRABOI~3.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/GRABOI~3.BGC",
+                        "thumbnailBig": "/thumb/l/usb/GRABOI~3.BGC",
+                        "download": "usb/GRABOI~3.BGC"
+                    }
+                },
+                {
+                    "name": "GRABOI~4.BGC",
+                    "display": "Graboid body 5-7.bgcode",
+                    "path": "usb/GRABOI~4.BGC",
+                    "origin": "usb",
+                    "refs": {
+                        "resource": "/api/files/usb/GRABOI~4.BGC",
+                        "thumbnailSmall": "/thumb/s/usb/GRABOI~4.BGC",
+                        "thumbnailBig": "/thumb/l/usb/GRABOI~4.BGC",
+                        "download": "usb/GRABOI~4.BGC"
+                    }
+                }
+            ]
+        }
+    ]
+}
+
+http://192.168.1.40/api/files/path/usb/GRABOI~3.BGC
+{
+    "title": "403: Forbidden",
+    "message": ""
+}
+???????????
+
+
+
+
+http://192.168.1.40/api/v1/files/usb/Graboid%20body%203-4.bgcode
+{
+    "name": "GRABOI~3.BGC",
+    "ro": false,
+    "type": "PRINT_FILE",
+    "m_timestamp": 1706798533,
+    "size": 33262753,
+    "refs": {
+        "icon": "/thumb/s/usb/GRABOI~3.BGC",
+        "thumbnail": "/thumb/l/usb/GRABOI~3.BGC",
+        "download": "/usb/GRABOI~3.BGC"
+    },
+    "display_name": "Graboid body 3-4.bgcode"
+}
+
+http://192.168.1.40/api/v1/cameras
+{
+    "title": "404: Not Found",
+    "message": ""
+}
+
+http://192.168.1.40/api/v1/cameras/1
+{
+    "title": "404: Not Found",
+    "message": ""
+}
+
+http://192.168.1.40/api/thumbnails/usb/Graboid%20body%203-4.bgcode.small.png
+malformed, not sure the right URL here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
